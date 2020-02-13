@@ -1,0 +1,18 @@
+# ***3gConnectionWvdial.service***
+[Unit]
+Description=Arranque de la conexion 3g
+After=multi-user.target
+ 
+[Service]
+Type=simple
+PIDFile=/var/run/3gconnect.pid
+ExecStart=sudo /usr/bin/wvdial 3gconnect
+User=pi
+Restart=always
+RestartSec=3s
+StandardOutput=syslog
+StandardError=syslog
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
