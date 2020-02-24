@@ -5,13 +5,13 @@ After=multi-user.target
  
 [Service]
 Type=simple
-PIDFile=/var/run/3gconnect.pid
-ExecStart=sudo /usr/bin/wvdial 3gconnect
-User=pi
+#ExecStartPre=./restore_iptables.sh
+ExecStart=/usr/bin/wvdial 3gconnect
+User=root
 Restart=always
 RestartSec=3s
-StandardOutput=syslog
-StandardError=syslog
+#StandardOutput=syslog
+#StandardError=syslog
 KillSignal=SIGINT
 
 [Install]
