@@ -1,5 +1,3 @@
-pot   
-
 A simple USB 3G dongle connection for the Raspberry Pi 3.                        
 
 The install script use dnsmasq and hostap to configure the hotspot
