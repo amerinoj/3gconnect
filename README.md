@@ -11,8 +11,6 @@ Quick Installation for Raspbian:
 ```bash
 sudo -i
 bash <(curl -s https://raw.githubusercontent.com/amerinoj/3gconnect/master/install.sh)     
-chmod +x install.sh
-./install.sh
 ```
                                                                                    
 ## Config
