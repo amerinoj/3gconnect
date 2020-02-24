@@ -30,7 +30,7 @@ if [ -d 3gconnect ]; then
   cd 3gconnect && git pull && git checkout ${1:master}
 else
   echo "Downloading 3gconnect..."
-  git clone https://github.com/amerinoj/3gconnection.git
+  git clone https://github.com/amerinoj/3gconnect.git
   cd 3gconnect && git checkout ${1:master}
 fi
 echo "done."  
