@@ -65,7 +65,7 @@ while [[ $opt != "End" ]]; do
                                break 2;
                             fi
                           done
-                        done
+                        
                         
                         id_dongle=$( echo $answer  | cut -d"[" -f1 | rev | cut -d"/" -f1)
                         tty=$(mmcli -m$id_dongle | grep -oh "\w*tty\w*" *)
