@@ -144,7 +144,7 @@ systemctl start 3gconnect.service
 systemctl status 3gconnect.service   --full --no-pager  
 echo "done."
 
-# Finished 3gconnect install
+# Finished
 echo
 echo "3gconnect has been installed."
 
@@ -173,14 +173,12 @@ do
                   wanif=""
                   Res=""
                   while [[ $Res != "End" ]]; do
-                      echo
-                      echo '####################  Select interface  ####################'
                       opt_iface="Select Wan interface,Select Lan interfaces,End"
                       oldIFS=$IFS
                       IFS=$','
                       choices=($opt_iface)
                       IFS=$oldIFS
-                      PS3="Select a  option: "
+                      PS3="Select your WAN card or outgoin interface: "
                       select answer in "${choices[@]}"; do
                          for item in "${choices[@]}"; do
                             if [[ $item == $answer ]]; then
@@ -191,8 +189,7 @@ do
                       Res=$answer
 
                       if [[ $answer == "Select Wan interface" ]]; then
-
-                        wanif=""                        
+                        
                         while [[ $answer != "End" ]]; do 
                          listcard=$(ifconfig  | grep flags  | cut -d":" -f1 | grep -v lo )
                          oldIFS=$IFS
@@ -201,7 +198,7 @@ do
                          choices+=('Refresh interfaces')
                          choices+=('End')    
                          IFS=$oldIFS  
-                         PS3="Select the wan interface: "
+
                          select answer in "${choices[@]}"; do
                            for item in "${choices[@]}"; do               
                               if [[ $item == $answer ]]; then
@@ -219,8 +216,6 @@ do
 
 
                     if [[ $answer == "Select Lan interfaces" ]]; then
-
-                       lanif=""
                         while [[ $answer != "End" ]]; do 
                           listcard=$(ifconfig  | grep flags  | cut -d":" -f1 | grep -v lo )
                           oldIFS=$IFS
@@ -229,7 +224,7 @@ do
                           choices+=('Refresh interfaces')
                           choices+=('End')                  
                           IFS=$oldIFS  
-                          PS3="Select the LAN interfaces: "
+
                           select answer in "${choices[@]}"; do
                              for item in "${choices[@]}"; do               
                                 if [[ $item == $answer ]]; then
@@ -277,15 +272,8 @@ do
                     echo "Bloking all incomming traffic from:"$wanif 
                     iptables -A INPUT -i $wanif -j DROP
 
-                    echo "Permtir forward from $lanif to "$wanif
-
-                    oldIFS=$IFS
-                    IFS=$','     
-                    int_iface=($lanif)
-                    IFS=$oldIFS   
-                    for item in "${int_iface[@]}"; do
-                         iptables -A FORWARD -i $item -o $wanif -j ACCEPT
-                    done
+                    echo "Permtir forward from any to "$wanif
+                    iptables -A FORWARD -i any -o $wanif -j ACCEPT
 
                     echo "Configuring Nat"
                     iptables -t nat -A  POSTROUTING -o $wanif -j MASQUERADE
@@ -297,11 +285,6 @@ do
                       echo "Added rules in startup saved in to /etc/rc.local "
                        sed -i 's=exit 0=iptables-restore < /etc/iptables.rules \nexit 0=g' /etc/rc.local  
                     fi
-
-                     # Rules installed
-                     echo
-                     echo "FW Rules has been installed."
-
 
                     break
                     ;;
@@ -315,7 +298,19 @@ do
         done
 
 
+
+# Install and start  daemon
+echo
+echo "Registering and starting 3g-connect with systemd..."
+
+ln -sfn /opt/3gconnect/3gconnect.service /etc/systemd/system/3gconnect.service  
+
+systemctl daemon-reload  
+systemctl enable 3gconnect.service   
+systemctl start 3gconnect.service   
+systemctl status 3gconnect.service   --full --no-pager  
+echo "done."
+
 # Finished
 echo
-echo "Finished"
-
+echo "3gconnect has been installed."

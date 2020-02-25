@@ -5,7 +5,7 @@ After=multi-user.target
  
 [Service]
 Type=simple
-#ExecStartPre=./restore_iptables.sh
+WorkingDirectory=/opt/3gconnect/
 ExecStart=/usr/bin/wvdial 3gconnect
 User=root
 Restart=always
