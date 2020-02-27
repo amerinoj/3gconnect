@@ -17,7 +17,7 @@ fi
 #################################
 echo "Installing dependencies..."
 apt-get update
-apt-get --yes --force-yes install git wvdial
+apt-get --yes --force-yes install git wvdial modemmanager
 echo "done."
 
 # Add 3gconnect user if not exist already
@@ -291,12 +291,9 @@ do
                     iptables -t nat -A  POSTROUTING -o $wanif -j MASQUERADE
 
                     echo "Saving rules"
-                    iptables-save > /opt/3gconnect/iptables.rules
+                    iptables-save > /etc/iptables/rules.v4
+                    ip6tables-save > /etc/iptables/rules.v6
 
-                    if ! [[ $( cat /etc/rc.local ) =~ "iptables-restore < /etc/iptables.rules" ]] ; then 
-                      echo "Added rules in startup saved in to /etc/rc.local "
-                       sed -i 's=exit 0=iptables-restore < /etc/iptables.rules \nexit 0=g' /etc/rc.local  
-                    fi
 
                      # Rules installed
                      echo
