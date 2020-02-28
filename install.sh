@@ -282,10 +282,11 @@ do
                      COMMIT
                      #END NAT
                      # End before '*filter'"
-
+                     echo "--------------------------------------------"
                      echo "Edit the file  /etc/ufw/before.rules and add"
+		     echo "############################################"
                      echo "$nat"
-
+                     echo "############################################"
 
 
                     break
