@@ -164,10 +164,7 @@ do
     case $opt in
            "Yes")
                  echo "Installing iptables-persistent"
-                 apt install iptables-persistent iptables
-
-                 sed -i '/net.ipv4.ip_forward/c\'net.ipv4.ip_forward=1'' /etc/sysctl.conf
-                 echo -e "Ip forward enable..."
+                 apt --yes install ufw
 
                   lanif=""
                   wanif=""
@@ -201,7 +198,7 @@ do
                          choices+=('Refresh interfaces')
                          choices+=('End')    
                          IFS=$oldIFS  
-                         PS3="Select the wan interface: "
+                         PS3="Select the wan interface ppp[x]: "
                          select answer in "${choices[@]}"; do
                            for item in "${choices[@]}"; do               
                               if [[ $item == $answer ]]; then
@@ -245,59 +242,50 @@ do
                      fi   
 
                  done
+		    echo "Stop ufw"
+                    ufw disable
+		    
+		    echo "Kernel forward Enable"
+		    sed -i '/net.ipv4.ip_forward/c\'net.ipv4.ip_forward=1'' /etc/sysctl.conf
+                    echo -e "Ip forward enable..."
+		    
+		    
+		    chown root:pi /lib
+		    sed -i '/IPV6=yes/c\IPV6=no' /etc/default/ufw
+		    
+		    echo "DEFAULT : Deny incomming , Allow outgoing , Allow forward"
+                    ufw default deny incoming
+                    ufw default allow outgoing
+                    ufw default allow FORWARD
 
-                    echo "Remove rules"
-                    echo "Stopping firewall and allowing everyone..."
-                    ipt="/sbin/iptables"
-                    ## Failsafe - die if /sbin/iptables not found
-                    [ ! -x "$ipt" ] && { echo "$0: \"${ipt}\" command not found."; exit 1; }
-                    $ipt -P INPUT ACCEPT
-                    $ipt -P FORWARD ACCEPT
-                    $ipt -P OUTPUT ACCEPT
-                    $ipt -F
-                    $ipt -X
-                    $ipt -t nat -F
-                    $ipt -t nat -X
-                    $ipt -t mangle -F
-                    $ipt -t mangle -X
-                    #$ipt iptables -t raw -F
-                    $ipt -t raw -X
-
-                    echo "Configuring Loopback interface"
-                    iptables -A INPUT -i lo -j ACCEPT
-                    iptables -A OUTPUT -o lo -j ACCEPT
-
-                    echo "Drop invalid packets"
-                    iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
-
-                    echo "Permit stablished connections:"
-                    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-                    iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT
-
-                    echo "Bloking all incomming traffic from:"$wanif 
-                    iptables -A INPUT -i $wanif -j DROP
-
-                    echo "Permtir forward from $lanif to "$wanif
-
+		    echo "Allow DNS"
+                    ufw allow dns
+		    
+                    echo "Permit incomming from $lanif to any "
                     oldIFS=$IFS
                     IFS=$','     
                     int_iface=($lanif)
                     IFS=$oldIFS   
                     for item in "${int_iface[@]}"; do
-                         iptables -A FORWARD -i $item -o $wanif -j ACCEPT
+                         ufw allow in on $item to any
                     done
-
-                    echo "Configuring Nat"
-                    iptables -t nat -A  POSTROUTING -o $wanif -j MASQUERADE
-
-                    echo "Saving rules"
-                    iptables-save > /etc/iptables/rules.v4
-                    ip6tables-save > /etc/iptables/rules.v6
-
 
                      # Rules installed
                      echo
                      echo "FW Rules has been installed."
+
+                     nat="# Put after the last comment
+                     *nat
+                     :POSTROUTING ACCEPT [0:0]
+                     #NAT ALL NETWORK TO WAN  
+                     -A POSTROUTING  -o $wanif -j MASQUERADE
+                     COMMIT
+                     #END NAT
+                     # End before '*filter'"
+
+                     echo "Edit the file  /etc/ufw/before.rules and add"
+                     echo "$nat"
+
 
 
                     break
