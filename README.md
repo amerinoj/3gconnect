@@ -30,6 +30,7 @@ Example:
 -A POSTROUTING  -o ppp0 -j MASQUERADE
 COMMIT
 #END NAT
+
 *filter
 ```
 After edit the file enable ufw
